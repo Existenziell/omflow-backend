@@ -38,6 +38,7 @@ router.route('/create').post((req, res) => {
 
 router.route('/:id').get((req, res) => {
   Practice.findById(req.params.id)
+    .populate({ path: 'teacher', select: 'name' })
     .then(practice => res.json(practice))
     .catch(err => res.status(400).json('Error: ' + err));
 });

@@ -49,6 +49,7 @@ router.route('/:id').delete((req, res) => {
 
 router.route('/:id').get((req, res) => {
   Teacher.findById(req.params.id)
+    .populate({ path: 'practices', select: ['name', 'description', 'duration'] })
     .then(teacher => res.json(teacher))
     .catch(err => res.status(400).json('Error: ' + err));
 });
