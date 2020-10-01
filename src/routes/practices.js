@@ -63,7 +63,6 @@ router.route('/update/:id').post((req, res) => {
       practice.description = req.body.description;
       practice.duration = Number(req.body.duration);
       practice.date = Date.parse(req.body.date);
-      practice.teacher = req.body.teacher;
 
       practice.save()
         .then(() => res.json('Practice updated!'))
