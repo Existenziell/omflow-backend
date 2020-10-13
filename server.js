@@ -33,12 +33,10 @@ mongoose.connect(
 // Routing
 const practicesRouter = require('./src/routes/practices');
 const teachersRouter = require('./src/routes/teachers');
-const mapsRouter = require('./src/routes/maps');
 const usersRouter = require('./src/routes/users');
 
 app.use('/practices', practicesRouter);
 app.use('/teachers', teachersRouter);
-app.use('/maps', mapsRouter);
 app.use('/users', usersRouter);
 
 app.listen(port, () => {
