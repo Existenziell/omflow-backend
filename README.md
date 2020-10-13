@@ -1,8 +1,11 @@
 # omflow-backend
+Restfull API on Mongo, Express, Node Stack.
 
-[Local](http://localhost:5000)
-[Heroku](https://omflow-frontend.herokuapp.com/)
+## URLs
+- [Local](http://localhost:5000)
+- [Heroku](https://omflow-frontend.herokuapp.com/)
 
+## Scripts
 ```
 nodemon server.js
 ```
