@@ -15,9 +15,8 @@ router.route('/create').post((req, res) => {
   const name = req.body.name;
   const description = req.body.description;
   const duration = Number(req.body.duration);
-  const date = Date.parse(req.body.date);
+  const date = req.body.date;
   const teacher = req.body.teacher;
-
   const newPractice = new Practice({
     name,
     description,
@@ -33,6 +32,7 @@ router.route('/create').post((req, res) => {
         { $push: { practices: newPractice._id } },
         (err, docs) => { if (err) console.log(err) })
     })
+    .then(() => res.json('Practice created!'))
     .catch(err => res.status(400).json('Error: ' + err));
 });
 
