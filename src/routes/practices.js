@@ -44,7 +44,7 @@ router.route('/:id').get((req, res) => {
     .catch(err => res.status(400).json('Error: ' + err));
 });
 
-router.route('/:id').delete((req, res) => {
+router.route('/:id').delete(auth, (req, res) => {
   Practice.findByIdAndDelete(req.params.id)
     .then(() => {
       // Delete corresponding practice id from teacher.practices
@@ -56,14 +56,14 @@ router.route('/:id').delete((req, res) => {
     .catch(err => res.status(400).json('Error: ' + err));
 });
 
-router.route('/update/:id').post((req, res) => {
+router.route('/update/:id').post(auth, (req, res) => {
 
   Practice.findById(req.params.id)
     .then(practice => {
       practice.name = req.body.name;
       practice.description = req.body.description;
       practice.duration = Number(req.body.duration);
-      practice.date = Date.parse(req.body.date);
+      practice.date = req.body.date;
 
       practice.save()
         .then(() => res.json('Practice updated!'))

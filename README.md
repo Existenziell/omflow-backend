@@ -1,5 +1,5 @@
 # omflow-backend
-Restfull API onrunning on Mongo, Express and Node.js.
+Restfull API running on MongoDB, Express and Node.js.
 
 ## URLs
 - [Local](http://localhost:5000)
