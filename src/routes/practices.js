@@ -1,6 +1,7 @@
 const router = require('express').Router();
 let Practice = require('../models/practice.model');
 let Teacher = require('../models/teacher.model');
+const auth = require("../middleware/auth");
 
 router.route('/').get((req, res) => {
   Practice.find()
@@ -11,7 +12,7 @@ router.route('/').get((req, res) => {
     .catch(err => res.status(400).json('Error: ' + err));
 });
 
-router.route('/create').post((req, res) => {
+router.route('/create').post(auth, (req, res) => {
   const name = req.body.name;
   const description = req.body.description;
   const duration = Number(req.body.duration);
