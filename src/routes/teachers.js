@@ -5,6 +5,7 @@ const Practice = require('../models/practice.model');
 const Teacher = require('../models/teacher.model');
 
 router.route('/').get((req, res) => {
+
   Teacher.find()
     .populate({ path: 'practices', select: 'name' })
     .then(teachers => res.json(teachers))
