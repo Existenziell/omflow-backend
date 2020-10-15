@@ -19,7 +19,7 @@ router.route('/create').post((req, res) => {
   const newTeacher = new Teacher({ name, description, address });
 
   newTeacher.save()
-    .then(() => res.json('Teacher created!'))
+    .then(() => res.json('Teacher created successfully!'))
     .catch(err => res.status(400).json('Error: ' + err));
 });
 
@@ -42,7 +42,7 @@ router.route('/:id').delete((req, res) => {
   Teacher.findByIdAndDelete(req.params.id)
     .then(() =>
       Practice.deleteMany({ "teacher": req.params.id })
-        .then(() => res.json('Teacher and practices deleted.'))
+        .then(() => res.json('Teacher and attached practices deleted.'))
         .catch(err => res.status(400).json('Error: ' + err))
     )
     .catch(err => res.status(400).json('Error: ' + err));

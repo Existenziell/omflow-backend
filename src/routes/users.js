@@ -13,10 +13,10 @@ router.post("/register", async (req, res) => {
     // validate
     if (!email || !password || !passwordCheck)
       return res.status(400).json({ msg: "Not all fields have been entered." });
-    if (password.length < 5)
+    if (password.length < 6)
       return res
         .status(400)
-        .json({ msg: "The password needs to be at least 5 characters long." });
+        .json({ msg: "The password needs to be at least 6 characters long." });
     if (password !== passwordCheck)
       return res
         .status(400)
@@ -103,13 +103,14 @@ router.post("/isTokenValid", async (req, res) => {
 });
 
 router.get("/", auth, async (req, res) => {
-  const user = await User.findById(req.user).populate('role');
+  const user = await User.findById(req.user).populate({ path: 'role', select: 'name' });
   res.json({
     id: user._id,
     name: user.name,
     email: user.email,
     location: user.location,
-    role: user.role.name
+    role: user.role.name,
+    createdAt: user.createdAt
   });
 });
 
@@ -120,7 +121,7 @@ router.post("/update/:id", auth, async (req, res) => {
       user.location = req.body.location;
 
       user.save()
-        .then(() => res.json('User has been updated!'))
+        .then(() => res.json('Data has been updated successfully!'))
         .catch(err => res.status(400).json('Error: ' + err));
     })
     .catch(err => res.status(400).json('Error: ' + err));
