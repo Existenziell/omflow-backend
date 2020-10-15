@@ -4,10 +4,11 @@ const jwt = require('jsonwebtoken');
 
 const auth = require("../middleware/auth");
 const User = require("../models/user.model");
+const Role = require('../models/role.model');
 
 router.post("/register", async (req, res) => {
   try {
-    let { email, password, passwordCheck, displayName } = req.body;
+    let { email, password, passwordCheck, name } = req.body;
 
     // validate
     if (!email || !password || !passwordCheck)
@@ -27,7 +28,7 @@ router.post("/register", async (req, res) => {
         .status(400)
         .json({ msg: "An account with this email already exists." });
 
-    if (!displayName) displayName = email;
+    if (!name) name = email;
 
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(password, salt);
@@ -35,7 +36,7 @@ router.post("/register", async (req, res) => {
     const newUser = new User({
       email,
       password: passwordHash,
-      displayName,
+      name,
     });
     const savedUser = await newUser.save();
     res.json(savedUser);
@@ -47,7 +48,6 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
     // validate
     if (!email || !password)
       return res.status(400).json({ msg: "Not all fields have been entered." });
@@ -66,8 +66,8 @@ router.post("/login", async (req, res) => {
       token,
       user: {
         id: user._id,
-        displayName: user.displayName,
-        email: user.displayName,
+        name: user.name,
+        email: user.email,
         role: user.role
       },
     });
@@ -103,11 +103,28 @@ router.post("/isTokenValid", async (req, res) => {
 });
 
 router.get("/", auth, async (req, res) => {
-  const user = await User.findById(req.user);
+  const user = await User.findById(req.user).populate('role');
   res.json({
-    displayName: user.displayName,
     id: user._id,
+    name: user.name,
+    email: user.email,
+    location: user.location,
+    role: user.role.name
   });
+});
+
+router.post("/update/:id", auth, async (req, res) => {
+  User.findById(req.params.id)
+    .then(user => {
+      user.name = req.body.name;
+      user.location = req.body.location;
+
+      user.save()
+        .then(() => res.json('User has been updated!'))
+        .catch(err => res.status(400).json('Error: ' + err));
+    })
+    .catch(err => res.status(400).json('Error: ' + err));
+
 });
 
 module.exports = router;

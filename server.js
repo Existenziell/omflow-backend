@@ -1,24 +1,22 @@
 const express = require('express');
-
 const mongoose = require('mongoose');
-const cors = require('cors');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 require('dotenv').config();
 
+// Initialize the app
 const app = express();
-
 const port = process.env.PORT || 5000;
+const db = process.env.MONGODG_URI;
 
 // Middleware
-app.use(express.static(__dirname + '/dist'));
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // Mongoose Connect
-mongoose.connect(
-  process.env.MONGODG_URI,
+mongoose.connect(db,
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -26,7 +24,7 @@ mongoose.connect(
   },
   (err) => {
     if (err) throw err;
-    console.log("MongoDB database connection established successfully");
+    console.log(`MongoDB database connection established successfully to ${db}`);
   }
 );
 
@@ -39,6 +37,7 @@ app.use('/practices', practicesRouter);
 app.use('/teachers', teachersRouter);
 app.use('/users', usersRouter);
 
+// Start server
 app.listen(port, () => {
-  console.log(`Server is running on port: ${port}`);
+  console.log(`Server is running on port ${port}`);
 });
