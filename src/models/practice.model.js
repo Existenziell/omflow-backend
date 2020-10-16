@@ -5,7 +5,9 @@ const practiceSchema = new Schema({
   description: { type: String, required: true },
   duration: { type: Number, required: true },
   date: { type: Number, required: true },
-  teacher: { type: Schema.Types.ObjectId, ref: 'Teacher' }
+  style: { type: Schema.Types.ObjectId, ref: 'Style', required: true },
+  level: { type: Schema.Types.ObjectId, ref: 'Level', required: true },
+  teacher: { type: Schema.Types.ObjectId, ref: 'Teacher', required: true }
 }, {
   timestamps: true,
 });

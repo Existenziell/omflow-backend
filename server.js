@@ -33,6 +33,7 @@ const practicesRouter = require('./src/routes/practices');
 const teachersRouter = require('./src/routes/teachers');
 const usersRouter = require('./src/routes/users');
 
+// Mount the routers to express app
 app.use('/practices', practicesRouter);
 app.use('/teachers', teachersRouter);
 app.use('/users', usersRouter);
