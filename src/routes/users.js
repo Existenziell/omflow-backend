@@ -5,6 +5,8 @@ const jwt = require('jsonwebtoken');
 const auth = require("../middleware/auth");
 const User = require("../models/user.model");
 const Role = require('../models/role.model');
+const Teacher = require('../models/teacher.model');
+const Practice = require('../models/practice.model');
 
 router.post("/register", async (req, res) => {
   try {
@@ -113,13 +115,25 @@ router.post("/isTokenValid", async (req, res) => {
 
 router.get("/", auth, async (req, res) => {
   const user = await User.findById(req.user).populate({ path: 'role', select: 'name' });
+  // If user is a teacher, populate with own classes
+  let practices = [];
+  if (user.role.name === 'teacher') {
+    const teacher = await (await Teacher.findOne({ userId: user._id }));
+    for (let p of teacher.practices) {
+      practices.push(await Practice.findById(p._id)
+        .populate({ path: 'teacher', select: 'name' })
+        .populate({ path: 'style', select: 'identifier' })
+        .populate({ path: 'level', select: 'identifier' }));
+    }
+  }
   res.json({
     id: user._id,
     name: user.name,
     email: user.email,
     location: user.location,
     role: user.role.name,
-    createdAt: user.createdAt
+    createdAt: user.createdAt,
+    practices: practices
   });
 });
 
