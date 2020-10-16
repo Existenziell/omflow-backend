@@ -62,15 +62,24 @@ router.post("/login", async (req, res) => {
     if (!isMatch) return res.status(400).json({ msg: "Invalid credentials." });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1w' });
-    res.json({
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      },
-    });
+
+    // Set lastLogin for AdminSpace
+    user.lastLogin = Date.now();
+
+    user.save()
+      .then(() => {
+        res.json({
+          token,
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+          },
+        });
+      })
+      .catch(err => res.status(400).json(err));
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -112,6 +121,11 @@ router.get("/", auth, async (req, res) => {
     role: user.role.name,
     createdAt: user.createdAt
   });
+});
+
+router.get("/all", auth, async (req, res) => {
+  const users = await User.find().populate({ path: 'role', select: 'name' });
+  res.json(users);
 });
 
 router.post("/update/:id", auth, async (req, res) => {

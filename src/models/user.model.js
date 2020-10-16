@@ -5,7 +5,8 @@ const userSchema = new Schema({
   password: { type: String, required: true, minlength: 6 },
   name: { type: String },
   location: { type: String },
-  role: { type: Schema.Types.ObjectId, ref: 'Role', default: '5f872aaa87341050241ddf57' }
+  role: { type: Schema.Types.ObjectId, ref: 'Role', default: '5f872a8a87341050241ddf56' },
+  lastLogin: { type: Date }
 }, {
   timestamps: true,
 });
