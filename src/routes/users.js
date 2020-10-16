@@ -118,6 +118,7 @@ router.get("/", auth, async (req, res) => {
   // If user is a teacher, populate with own classes
   let practices = [];
   let teacherId = "";
+  let teacherName = "";
   if (user.role.name === 'teacher') {
     const teacher = await (await Teacher.findOne({ userId: user._id }));
     // Pass down teacher details to frontend
