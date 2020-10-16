@@ -117,8 +117,12 @@ router.get("/", auth, async (req, res) => {
   const user = await User.findById(req.user).populate({ path: 'role', select: 'name' });
   // If user is a teacher, populate with own classes
   let practices = [];
+  let teacherId = "";
   if (user.role.name === 'teacher') {
     const teacher = await (await Teacher.findOne({ userId: user._id }));
+    // Pass down teacher details to frontend
+    teacherId = teacher._id;
+    teacherName = teacher.name;
     for (let p of teacher.practices) {
       practices.push(await Practice.findById(p._id)
         .populate({ path: 'teacher', select: 'name' })
@@ -131,9 +135,11 @@ router.get("/", auth, async (req, res) => {
     name: user.name,
     email: user.email,
     location: user.location,
-    role: user.role.name,
     createdAt: user.createdAt,
-    practices: practices
+    role: user.role.name,
+    practices: practices,
+    teacherId,
+    teacherName
   });
 });
 

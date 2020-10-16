@@ -10,7 +10,8 @@ const teacherSchema = new Schema({
   image: { type: String },
   video: { type: String },
   coordinates: { type: Array },
-  practices: [{ type: Schema.Types.ObjectId, ref: 'Practice' }]
+  practices: [{ type: Schema.Types.ObjectId, ref: 'Practice' }],
+  userId: { type: Schema.Types.ObjectId, ref: 'User' }
 }, {
   timestamps: true,
 });
