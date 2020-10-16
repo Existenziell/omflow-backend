@@ -85,8 +85,6 @@ router.route('/:id').delete(auth, (req, res) => {
 });
 
 router.route('/update/:id').post(auth, (req, res) => {
-
-  console.log(req.body);
   Practice.findById(req.params.id)
     .then(practice => {
       practice.name = req.body.name;
