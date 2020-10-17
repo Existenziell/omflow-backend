@@ -50,9 +50,27 @@ router.route('/:id').delete((req, res) => {
 
 router.route('/:id').get((req, res) => {
   Teacher.findById(req.params.id)
-    .populate({ path: 'practices', select: ['name', 'description', 'duration'] })
-    .then(teacher => res.json(teacher))
-    .catch(err => res.status(400).json('Error: ' + err));
+    .populate({
+      path: 'practices',
+      populate: {
+        path: 'level',
+        model: 'Level'
+      }
+    })
+    .populate({
+      path: 'practices',
+      populate: {
+        path: 'style',
+        model: 'Style'
+      }
+    })
+    .exec(function (err, teacher) {
+      if (err) {
+        res.status(400).json(err);
+        return;
+      }
+      res.json(teacher);
+    });
 });
 
 module.exports = router;
