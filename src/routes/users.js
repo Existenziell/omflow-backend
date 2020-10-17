@@ -87,10 +87,16 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.delete("/delete", auth, async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
   try {
-    const deletedUser = await User.findByIdAndDelete(req.user);
-    res.json(deletedUser);
+    const userId = req.params.id;
+    const deletedUser = await User.findByIdAndDelete(userId);
+    if (deletedUser) {
+      // Delete corresponding userId entry in teachers collection
+      Teacher.updateOne({ userId: userId }, { $unset: { userId } })
+        .then(() => res.json('Data has been updated successfully!'))
+        .catch(err => res.status(400).json(err));
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

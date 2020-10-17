@@ -42,13 +42,7 @@ router.route('/create').post(auth, async (req, res) => {
   const level = req.body.level;
 
   const newPractice = new Practice({
-    name,
-    description,
-    duration,
-    date,
-    teacher,
-    style,
-    level
+    name, description, duration, date, teacher, style, level
   });
 
   newPractice.save()
@@ -87,12 +81,13 @@ router.route('/:id').delete(auth, (req, res) => {
 router.route('/update/:id').post(auth, (req, res) => {
   Practice.findById(req.params.id)
     .then(practice => {
-      practice.name = req.body.name;
-      practice.description = req.body.description;
-      practice.duration = Number(req.body.duration);
-      practice.date = req.body.date;
-      practice.style = req.body.style;
-      practice.level = req.body.level;
+      const { name, description, duration, date, style, level } = req.body;
+      practice.name = name;
+      practice.description = description;
+      practice.duration = Number(duration);
+      practice.date = date;
+      practice.style = style;
+      practice.level = level;
 
       practice.save()
         .then(() => res.json('Practice updated!'))
