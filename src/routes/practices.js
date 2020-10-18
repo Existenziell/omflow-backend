@@ -5,95 +5,123 @@ let Style = require('../models/style.model');
 let Level = require('../models/level.model');
 const auth = require("../middleware/auth");
 
-router.route('/styles').get((req, res) => {
-  Style.find()
-    .then(styles => {
-      res.json(styles);
-    })
-    .catch(err => res.status(400).json('Error: ' + err));
+router.get('/styles', async (req, res) => {
+  try {
+    Style.find()
+      .then(styles => {
+        res.json(styles);
+      })
+      .catch(err => res.status(400).json('Error: ' + err));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.route('/levels').get((req, res) => {
-  Level.find()
-    .then(levels => {
-      res.json(levels);
-    })
-    .catch(err => res.status(400).json('Error: ' + err));
+router.get('/levels', async (req, res) => {
+  try {
+    Level.find()
+      .then(levels => {
+        res.json(levels);
+      })
+      .catch(err => res.status(400).json('Error: ' + err));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.route('/').get((req, res) => {
-  Practice.find()
-    .populate({ path: 'teacher', select: 'name' })
-    .populate({ path: 'style', select: 'identifier' })
-    .populate({ path: 'level', select: 'identifier' })
-    .then(practices => {
-      res.json(practices);
-    })
-    .catch(err => res.status(400).json('Error: ' + err));
+router.get('/', async (req, res) => {
+  try {
+    Practice.find()
+      .populate({ path: 'teacher', select: 'name' })
+      .populate({ path: 'style', select: 'identifier' })
+      .populate({ path: 'level', select: 'identifier' })
+      .then(practices => {
+        res.json(practices);
+      })
+      .catch(err => res.status(400).json('Error: ' + err));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.route('/create').post(auth, async (req, res) => {
-  const name = req.body.name;
-  const description = req.body.description;
-  const duration = Number(req.body.duration);
-  const date = req.body.date;
-  const teacher = req.body.teacher;
-  const style = req.body.style;
-  const level = req.body.level;
+router.post('/create', auth, async (req, res) => {
+  try {
+    const name = req.body.name;
+    const description = req.body.description;
+    const duration = Number(req.body.duration);
+    const date = req.body.date;
+    const teacher = req.body.teacher;
+    const style = req.body.style;
+    const level = req.body.level;
 
-  const newPractice = new Practice({
-    name, description, duration, date, teacher, style, level
-  });
+    const newPractice = new Practice({
+      name, description, duration, date, teacher, style, level
+    });
 
-  newPractice.save()
-    .then(() => {
-      // Add corresponding practice id to teacher.practices
-      Teacher.findByIdAndUpdate(teacher,
-        { $push: { practices: newPractice._id } },
-        (err, docs) => { if (err) console.log(err) })
-    })
-    .then(() => res.json('Practice created!'))
-    .catch(err => res.status(400).json('Error: ' + err));
+    newPractice.save()
+      .then(() => {
+        // Add corresponding practice id to teacher.practices
+        Teacher.findByIdAndUpdate(teacher,
+          { $push: { practices: newPractice._id } },
+          (err, docs) => { if (err) console.log(err) })
+      })
+      .then(() => res.json('Practice created!'))
+      .catch(err => res.status(400).json('Error: ' + err));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.route('/:id').get((req, res) => {
-  Practice.findById(req.params.id)
-    .populate({ path: 'teacher', select: 'name' })
-    .populate({ path: 'style', select: 'identifier' })
-    .populate({ path: 'level', select: 'identifier' })
-    .then(practice => res.json(practice))
-    .catch(err => res.status(400).json('Error: ' + err));
+router.get('/:id', async (req, res) => {
+  try {
+    Practice.findById(req.params.id)
+      .populate({ path: 'teacher', select: 'name' })
+      .populate({ path: 'style', select: 'identifier' })
+      .populate({ path: 'level', select: 'identifier' })
+      .then(practice => res.json(practice))
+      .catch(err => res.status(400).json('Error: ' + err));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.route('/:id').delete(auth, (req, res) => {
-  Practice.findByIdAndDelete(req.params.id)
-    .then(() => {
-      // Delete corresponding practice id from teacher.practices
-      Teacher.updateMany({
-        $pull: { practices: req.params.id }
-      }).then(() => {
-        res.json('Practice deleted.')
-      });
-    })
-    .catch(err => res.status(400).json('Error: ' + err));
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    Practice.findByIdAndDelete(req.params.id)
+      .then(() => {
+        // Delete corresponding practice id from teacher.practices
+        Teacher.updateMany({
+          $pull: { practices: req.params.id }
+        }).then(() => {
+          res.json('Practice deleted.')
+        });
+      })
+      .catch(err => res.status(400).json('Error: ' + err));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.route('/update/:id').post(auth, (req, res) => {
-  Practice.findById(req.params.id)
-    .then(practice => {
-      const { name, description, duration, date, style, level } = req.body;
-      practice.name = name;
-      practice.description = description;
-      practice.duration = Number(duration);
-      practice.date = date;
-      practice.style = style;
-      practice.level = level;
+router.post('/update/:id', auth, async (req, res) => {
+  try {
+    Practice.findById(req.params.id)
+      .then(practice => {
+        const { name, description, duration, date, style, level } = req.body;
+        practice.name = name;
+        practice.description = description;
+        practice.duration = Number(duration);
+        practice.date = date;
+        practice.style = style;
+        practice.level = level;
 
-      practice.save()
-        .then(() => res.json('Practice updated!'))
-        .catch(err => res.status(400).json('Error: ' + err));
-    })
-    .catch(err => res.status(400).json('Error: ' + err));
+        practice.save()
+          .then(() => res.json('Practice updated!'))
+          .catch(err => res.status(400).json('Error: ' + err));
+      })
+      .catch(err => res.status(400).json('Error: ' + err));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

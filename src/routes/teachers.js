@@ -1,76 +1,94 @@
 const router = require('express').Router();
-const path = require('path');
+const auth = require("../middleware/auth");
 
 const Practice = require('../models/practice.model');
 const Teacher = require('../models/teacher.model');
 
-router.route('/').get((req, res) => {
-
+router.get('/', async (req, res) => {
   Teacher.find()
     .populate({ path: 'practices', select: 'name' })
     .then(teachers => res.json(teachers))
     .catch(err => res.status(400).json('Error: ' + err));
 });
 
-router.route('/create').post((req, res) => {
-  const name = req.body.name;
-  const description = req.body.description;
-  const address = req.body.address;
-  const newTeacher = new Teacher({ name, description, address });
+router.post('/create', auth, async (req, res) => {
+  try {
+    const name = req.body.name;
+    const description = req.body.description;
+    const address = req.body.address;
+    const newTeacher = new Teacher({ name, description, address });
 
-  newTeacher.save()
-    .then(() => res.json('Teacher created successfully!'))
-    .catch(err => res.status(400).json('Error: ' + err));
+    newTeacher.save()
+      .then(() => res.json('Teacher created successfully!'))
+      .catch(err => res.status(400).json('Error: ' + err));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.route('/edit/:id').post((req, res) => {
+router.post('/edit/:id', auth, async (req, res) => {
+  try {
+    Teacher.findById(req.params.id)
+      .then(teacher => {
+        const { name, description, address, quote, instagram, pose } = req.body;
+        teacher.name = name;
+        teacher.description = description;
+        teacher.address = address;
+        teacher.quote = quote;
+        teacher.instagram = instagram;
+        teacher.pose = pose;
 
-  Teacher.findById(req.params.id)
-    .then(teacher => {
-      teacher.name = req.body.name;
-      teacher.description = req.body.description;
-      teacher.address = req.body.address;
-
-      teacher.save()
-        .then(() => res.json('Teacher updated!'))
-        .catch(err => res.status(400).json('Error: ' + err));
-    })
-    .catch(err => res.status(400).json('Error: ' + err));
+        teacher.save()
+          .then(() => res.json('Data has been updated successfully!'))
+          .catch(err => res.status(400).json('Error: ' + err));
+      })
+      .catch(err => res.status(400).json('Error: ' + err));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.route('/:id').delete((req, res) => {
-  Teacher.findByIdAndDelete(req.params.id)
-    .then(() =>
-      Practice.deleteMany({ "teacher": req.params.id })
-        .then(() => res.json('Teacher and attached practices deleted.'))
-        .catch(err => res.status(400).json('Error: ' + err))
-    )
-    .catch(err => res.status(400).json('Error: ' + err));
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    Teacher.findByIdAndDelete(req.params.id)
+      .then(() =>
+        Practice.deleteMany({ "teacher": req.params.id })
+          .then(() => res.json('Teacher and attached practices deleted.'))
+          .catch(err => res.status(400).json('Error: ' + err))
+      )
+      .catch(err => res.status(400).json('Error: ' + err));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.route('/:id').get((req, res) => {
-  Teacher.findById(req.params.id)
-    .populate({
-      path: 'practices',
-      populate: {
-        path: 'level',
-        model: 'Level'
-      }
-    })
-    .populate({
-      path: 'practices',
-      populate: {
-        path: 'style',
-        model: 'Style'
-      }
-    })
-    .exec(function (err, teacher) {
-      if (err) {
-        res.status(400).json(err);
-        return;
-      }
-      res.json(teacher);
-    });
+router.get('/:id', async (req, res) => {
+  try {
+    Teacher.findById(req.params.id)
+      .populate({
+        path: 'practices',
+        populate: {
+          path: 'level',
+          model: 'Level'
+        }
+      })
+      .populate({
+        path: 'practices',
+        populate: {
+          path: 'style',
+          model: 'Style'
+        }
+      })
+      .exec(function (err, teacher) {
+        if (err) {
+          res.status(400).json(err);
+          return;
+        }
+        res.json(teacher);
+      });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

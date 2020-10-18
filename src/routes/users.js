@@ -12,7 +12,7 @@ router.post("/register", async (req, res) => {
   try {
     let { email, password, passwordCheck, name } = req.body;
 
-    // validate
+    // Validate
     if (!email || !password || !passwordCheck)
       return res.status(400).json({ msg: "Not all fields have been entered." });
     if (password.length < 6)
@@ -50,7 +50,7 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    // validate
+    // Validate
     if (!email || !password)
       return res.status(400).json({ msg: "Not all fields have been entered." });
 
@@ -87,21 +87,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.delete("/:id", auth, async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const deletedUser = await User.findByIdAndDelete(userId);
-    if (deletedUser) {
-      // Delete corresponding userId entry in teachers collection
-      Teacher.updateOne({ userId: userId }, { $unset: { userId } })
-        .then(() => res.json('Data has been updated successfully!'))
-        .catch(err => res.status(400).json(err));
-    }
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 router.post("/isTokenValid", async (req, res) => {
   try {
     const token = req.header("x-auth-token");
@@ -120,53 +105,75 @@ router.post("/isTokenValid", async (req, res) => {
 });
 
 router.get("/", auth, async (req, res) => {
-  const user = await User.findById(req.user).populate({ path: 'role', select: 'name' });
-  // If user is a teacher, populate with own classes
-  let practices = [];
-  let teacherId = "";
-  let teacherName = "";
-  if (user.role.name === 'teacher') {
-    const teacher = await (await Teacher.findOne({ userId: user._id }));
-    // Pass down teacher details to frontend
-    teacherId = teacher._id;
-    teacherName = teacher.name;
-    for (let p of teacher.practices) {
-      practices.push(await Practice.findById(p._id)
-        .populate({ path: 'teacher', select: 'name' })
-        .populate({ path: 'style', select: 'identifier' })
-        .populate({ path: 'level', select: 'identifier' }));
+  try {
+    const user = await User.findById(req.user).populate({ path: 'role', select: 'name' });
+
+    // If user is a teacher, populate with own classes
+    let practices = [];
+    let teacher = {};
+    if (user.role.name === 'teacher') {
+      teacher = await (await Teacher.findOne({ userId: user._id }));
+      for (let p of teacher.practices) {
+        practices.push(await Practice.findById(p._id)
+          .populate({ path: 'teacher', select: 'name' })
+          .populate({ path: 'style', select: 'identifier' })
+          .populate({ path: 'level', select: 'identifier' }));
+      }
+      teacher.practices = practices;
     }
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      location: user.location,
+      createdAt: user.createdAt,
+      role: user.role.name,
+      teacher, // If user === teacher, pass down teacher details to frontend
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  res.json({
-    id: user._id,
-    name: user.name,
-    email: user.email,
-    location: user.location,
-    createdAt: user.createdAt,
-    role: user.role.name,
-    practices: practices,
-    teacherId,
-    teacherName
-  });
 });
 
 router.get("/all", auth, async (req, res) => {
-  const users = await User.find().populate({ path: 'role', select: 'name' });
-  res.json(users);
+  try {
+    const users = await User.find().populate({ path: 'role', select: 'name' });
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.post("/update/:id", auth, async (req, res) => {
-  User.findById(req.params.id)
-    .then(user => {
-      user.name = req.body.name;
-      user.location = req.body.location;
+  try {
+    User.findById(req.params.id)
+      .then(user => {
+        user.name = req.body.name;
+        user.location = req.body.location;
 
-      user.save()
+        user.save()
+          .then(() => res.json('Data has been updated successfully!'))
+          .catch(err => res.status(400).json('Error: ' + err));
+      })
+      .catch(err => res.status(400).json('Error: ' + err));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const deletedUser = await User.findByIdAndDelete(userId);
+    if (deletedUser) {
+      // Delete corresponding userId entry in teachers collection
+      Teacher.updateOne({ userId: userId }, { $unset: { userId } })
         .then(() => res.json('Data has been updated successfully!'))
-        .catch(err => res.status(400).json('Error: ' + err));
-    })
-    .catch(err => res.status(400).json('Error: ' + err));
-
+        .catch(err => res.status(400).json(err));
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;
