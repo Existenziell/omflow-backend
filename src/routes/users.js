@@ -8,45 +8,6 @@ const Role = require('../models/role.model');
 const Teacher = require('../models/teacher.model');
 const Practice = require('../models/practice.model');
 
-router.post("/register", async (req, res) => {
-  try {
-    let { email, password, passwordCheck, name } = req.body;
-
-    // Validate
-    if (!email || !password || !passwordCheck)
-      return res.status(400).json({ msg: "Not all fields have been entered." });
-    if (password.length < 6)
-      return res
-        .status(400)
-        .json({ msg: "The password needs to be at least 6 characters long." });
-    if (password !== passwordCheck)
-      return res
-        .status(400)
-        .json({ msg: "Enter the same password twice for verification." });
-
-    const existingUser = await User.findOne({ email: email });
-    if (existingUser)
-      return res
-        .status(400)
-        .json({ msg: "An account with this email already exists." });
-
-    if (!name) name = email;
-
-    const salt = await bcrypt.genSalt();
-    const passwordHash = await bcrypt.hash(password, salt);
-
-    const newUser = new User({
-      email,
-      password: passwordHash,
-      name,
-    });
-    const savedUser = await newUser.save();
-    res.json(savedUser);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -63,11 +24,13 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ msg: "Invalid credentials." });
 
+    // Make sure the user has been verified
+    if (!user.isVerified) return res.status(401).send({ type: 'not-verified', msg: 'Your account has not been verified yet. Please confirm your email address first. Check your inbox.' });
+
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1w' });
 
     // Set lastLogin for AdminSpace
     user.lastLogin = Date.now();
-
     user.save()
       .then(() => {
         res.json({
@@ -128,6 +91,7 @@ router.get("/", auth, async (req, res) => {
       location: user.location,
       createdAt: user.createdAt,
       role: user.role.name,
+      isVerified: user.isVerified,
       teacher, // If user === teacher, pass down teacher details to frontend
     });
   } catch (err) {

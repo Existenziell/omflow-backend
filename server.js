@@ -32,11 +32,13 @@ mongoose.connect(db,
 const practicesRouter = require('./src/routes/practices');
 const teachersRouter = require('./src/routes/teachers');
 const usersRouter = require('./src/routes/users');
+const signupRouter = require('./src/routes/signup');
 
 // Mount the routers to express app
 app.use('/practices', practicesRouter);
 app.use('/teachers', teachersRouter);
 app.use('/users', usersRouter);
+app.use('/signup', signupRouter);
 
 // Start server
 app.listen(port, () => {
