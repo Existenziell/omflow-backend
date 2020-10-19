@@ -36,6 +36,7 @@ router.get('/', async (req, res) => {
       .populate({ path: 'style', select: 'identifier' })
       .populate({ path: 'level', select: 'identifier' })
       .then(practices => {
+        console.log(practices);
         res.json(practices);
       })
       .catch(err => res.status(400).json('Error: ' + err));
@@ -46,16 +47,16 @@ router.get('/', async (req, res) => {
 
 router.post('/create', auth, async (req, res) => {
   try {
-    const name = req.body.name;
     const description = req.body.description;
     const duration = Number(req.body.duration);
     const date = req.body.date;
     const teacher = req.body.teacher;
     const style = req.body.style;
     const level = req.body.level;
+    const price = req.body.price;
 
     const newPractice = new Practice({
-      name, description, duration, date, teacher, style, level
+      description, duration, date, teacher, style, level, price
     });
 
     newPractice.save()
@@ -106,13 +107,13 @@ router.post('/update/:id', auth, async (req, res) => {
   try {
     Practice.findById(req.params.id)
       .then(practice => {
-        const { name, description, duration, date, style, level } = req.body;
-        practice.name = name;
+        const { name, description, duration, date, style, level, price } = req.body;
         practice.description = description;
         practice.duration = Number(duration);
         practice.date = date;
         practice.style = style;
         practice.level = level;
+        practice.price = price;
 
         practice.save()
           .then(() => res.json('Practice updated!'))
