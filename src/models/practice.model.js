@@ -14,12 +14,10 @@ const practiceSchema = new Schema({
 });
 
 function getPrice(num) {
-  // console.log(num);
   return (num / 100).toFixed(2);
 }
 
 function setPrice(num) {
-  // console.log(num);
   return num * 100;
 }
 

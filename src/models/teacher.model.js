@@ -11,8 +11,8 @@ const teacherSchema = new Schema({
   image: { type: String },
   video: { type: String },
   tag: { type: String, unique: true },
-  levels: { type: Array },
-  styles: { type: Array },
+  styles: [{ type: Schema.Types.ObjectId, ref: 'Style' }],
+  levels: [{ type: Schema.Types.ObjectId, ref: 'Level' }],
   practices: [{ type: Schema.Types.ObjectId, ref: 'Practice' }],
   userId: { type: Schema.Types.ObjectId, ref: 'User' }
 }, {

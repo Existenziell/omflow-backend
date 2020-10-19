@@ -3,10 +3,22 @@ const auth = require("../middleware/auth");
 
 const Practice = require('../models/practice.model');
 const Teacher = require('../models/teacher.model');
+const Level = require('../models/level.model');
 
 router.get('/', async (req, res) => {
+
+
   Teacher.find()
-    .populate({ path: 'practices', select: 'name' })
+    .populate({
+      path: 'practices',
+      populate: { path: 'level', model: 'Level' }
+    })
+    .populate({
+      path: 'practices',
+      populate: { path: 'style', model: 'Style' }
+    })
+    .populate({ path: 'levels', select: 'identifier' })
+    .populate({ path: 'styles', select: 'identifier' })
     .then(teachers => res.json(teachers))
     .catch(err => res.status(400).json('Error: ' + err));
 });
@@ -67,17 +79,11 @@ router.get('/:id', async (req, res) => {
     Teacher.findById(req.params.id)
       .populate({
         path: 'practices',
-        populate: {
-          path: 'level',
-          model: 'Level'
-        }
+        populate: { path: 'level', model: 'Level' }
       })
       .populate({
         path: 'practices',
-        populate: {
-          path: 'style',
-          model: 'Style'
-        }
+        populate: { path: 'style', model: 'Style' }
       })
       .exec(function (err, teacher) {
         if (err) {
