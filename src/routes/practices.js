@@ -36,7 +36,6 @@ router.get('/', async (req, res) => {
       .populate({ path: 'style', select: 'identifier' })
       .populate({ path: 'level', select: 'identifier' })
       .then(practices => {
-        console.log(practices);
         res.json(practices);
       })
       .catch(err => res.status(400).json('Error: ' + err));
