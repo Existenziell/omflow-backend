@@ -46,13 +46,9 @@ router.get('/', async (req, res) => {
 
 router.post('/create', auth, async (req, res) => {
   try {
-    const description = req.body.description;
+
+    const { description, date, teacher, style, level, price } = req.body;
     const duration = Number(req.body.duration);
-    const date = req.body.date;
-    const teacher = req.body.teacher;
-    const style = req.body.style;
-    const level = req.body.level;
-    const price = req.body.price;
 
     const newPractice = new Practice({
       description, duration, date, teacher, style, level, price

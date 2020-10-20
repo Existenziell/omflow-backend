@@ -6,8 +6,6 @@ const Teacher = require('../models/teacher.model');
 const Level = require('../models/level.model');
 
 router.get('/', async (req, res) => {
-
-
   Teacher.find()
     .populate({
       path: 'practices',
@@ -25,10 +23,8 @@ router.get('/', async (req, res) => {
 
 router.post('/create', auth, async (req, res) => {
   try {
-    const name = req.body.name;
-    const description = req.body.description;
-    const address = req.body.address;
-    const newTeacher = new Teacher({ name, description, address });
+    const { name, levels, styles, description, address, quote, instagram, pose, coordinates, tag } = req.body;
+    const newTeacher = await new Teacher({ name, levels, styles, description, address, quote, instagram, pose, coordinates, tag });
 
     newTeacher.save()
       .then(() => res.json('Teacher created successfully!'))
@@ -42,13 +38,20 @@ router.post('/edit/:id', auth, async (req, res) => {
   try {
     Teacher.findById(req.params.id)
       .then(teacher => {
-        const { name, description, address, quote, instagram, pose } = req.body;
+
+        let { name, description, address, quote, instagram, pose, levels, styles, coordinates } = req.body;
+
         teacher.name = name;
         teacher.description = description;
         teacher.address = address;
         teacher.quote = quote;
         teacher.instagram = instagram;
         teacher.pose = pose;
+
+        // If these values are set (coming from admin) -> save
+        levels !== undefined ? teacher.levels = levels : null
+        styles !== undefined ? teacher.styles = styles : null
+        coordinates !== undefined ? teacher.coordinates = coordinates : null
 
         teacher.save()
           .then(() => res.json('Data has been updated successfully!'))
@@ -77,6 +80,8 @@ router.delete('/:id', auth, async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     Teacher.findById(req.params.id)
+      .populate('levels')
+      .populate('styles')
       .populate({
         path: 'practices',
         populate: { path: 'level', model: 'Level' }
