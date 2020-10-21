@@ -4,7 +4,7 @@ const teacherSchema = new Schema({
   name: { type: String, required: true, unique: true, trim: true },
   description: { type: String, trim: true, default: '' },
   quote: { type: String, trim: true, default: '' },
-  instragram: { type: String, trim: true, default: '' },
+  instagram: { type: String, trim: true, default: '' },
   pose: { type: String, trim: true, default: '' },
   address: { type: String, trim: true, default: '' },
   coordinates: { type: Array, required: true },

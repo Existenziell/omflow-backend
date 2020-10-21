@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const multer = require("multer");
 const auth = require("../middleware/auth");
 
 const Practice = require('../models/practice.model');
@@ -21,10 +22,43 @@ router.get('/', async (req, res) => {
     .catch(err => res.status(400).json('Error: ' + err));
 });
 
-router.post('/create', auth, async (req, res) => {
+
+var storage = multer.diskStorage({
+  destination: function (req, file, next) {
+    next(null, './public/')
+  },
+  filename: function (req, file, next) {
+    const filename = `${req.body.tag}.${file.mimetype.replace("image/", "")}`;
+    next(null, filename)
+  }
+})
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg" || file.mimetype == "image/gif") {
+    cb(null, true);
+  } else {
+    cb(null, false);
+    return cb(new Error('Allowed only .png, .jpg, .jpeg and .gif'));
+  }
+}
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 25,
+    fieldSize: 1024 * 1024 * 25
+  },
+  fileFilter: fileFilter
+});
+
+router.post("/create", auth, upload.single('file'), async (req, res, next) => {
   try {
     const { name, levels, styles, description, address, quote, instagram, pose, coordinates, tag } = req.body;
-    const newTeacher = await new Teacher({ name, levels, styles, description, address, quote, instagram, pose, coordinates, tag });
+    const image = req.file.path.replace("public/", "");
+
+    const newTeacher = await new Teacher({
+      name, levels, styles, description, address, quote, instagram, pose, coordinates, tag, image
+    });
 
     newTeacher.save()
       .then(() => res.json('Teacher created successfully!'))
@@ -40,7 +74,6 @@ router.post('/edit/:id', auth, async (req, res) => {
       .then(teacher => {
 
         let { name, description, address, quote, instagram, pose, levels, styles, coordinates } = req.body;
-
         teacher.name = name;
         teacher.description = description;
         teacher.address = address;

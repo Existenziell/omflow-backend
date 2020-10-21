@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const morgan = require('morgan');
 const cors = require('cors');
 
 require('dotenv').config();
@@ -12,8 +13,12 @@ const db = process.env.MONGODG_URI;
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(morgan("dev"));
+
+// Static toute to /public
+app.use(express.static('public'));
 
 // Mongoose Connect
 mongoose.connect(db,
@@ -24,7 +29,7 @@ mongoose.connect(db,
   },
   (err) => {
     if (err) throw err;
-    console.log(`MongoDB database connection established successfully to ${db}`);
+    console.log(`MongoDB database connection established successfully.`);
   }
 );
 
