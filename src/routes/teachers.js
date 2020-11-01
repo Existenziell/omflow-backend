@@ -53,8 +53,12 @@ const upload = multer({
 
 router.post("/create", auth, upload.single('file'), async (req, res, next) => {
   try {
-    const { name, levels, styles, description, address, quote, instagram, pose, coordinates, tag } = req.body;
+    const { name, description, address, quote, instagram, pose, tag } = req.body;
     const image = req.file.path.replace("public/", "");
+
+    const levels = JSON.parse(req.body.levels);
+    const styles = JSON.parse(req.body.styles);
+    const coordinates = JSON.parse(req.body.coordinates);
 
     const newTeacher = await new Teacher({
       name, levels, styles, description, address, quote, instagram, pose, coordinates, tag, image
